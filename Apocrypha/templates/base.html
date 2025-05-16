@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Apocrypha{% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <h1>Apocrypha</h1>
+        <p class="tagline">A new home for ethical business creation, open collaboration, and principled growth.</p>
+        <nav>
+            <a href="/">Home</a> |
+            <a href="/vision">Manifesto</a> |
+            <a href="/join">Join</a> |
+            <a href="/invest">Invest</a> |
+            <a href="/karma">Karma</a> |
+            <a href="/blog">Blog</a> |
+            <a href="/faq">FAQ</a> |
+            <a href="/contact">Contact</a>
+        </nav>
+    </header>
+    <main>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash">{{ messages[0] }}</div>
+          {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html> 

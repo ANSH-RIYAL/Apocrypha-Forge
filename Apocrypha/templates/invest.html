@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Invest in Apocrypha{% endblock %}
+{% block content %}
+<section>
+    <h2>Invest in the Future of Ethical Business</h2>
+    <p>Apocrypha is not a charity or a fund. It's a systematic, ethical business creation engine—where being fair, collaborative, and long-term focused is a competitive advantage, not a restriction. We believe that helping others, especially fellow startups, and investing in each other when one has money and the other doesn't, is the best way to build a resilient, profitable ecosystem. Being good doesn't mean being poor or exploited; it means being fair, not greedy, and thinking in decades, not quarters.</p>
+</section>
+<section>
+    <h2>Micro-Investors: The Power of the Pool</h2>
+    <p>Imagine 1,000 people each investing $100–$500/month. Here's what that can do:</p>
+    <ul>
+        <li><strong>Monthly pool:</strong> $100,000 – $500,000</li>
+        <li><strong>Annual pool:</strong> $1.2M – $6M</li>
+        <li><strong>Lean MVP cost (volunteer teams, LLM/hosting only):</strong> $10,000 – $30,000</li>
+        <li><strong>Seed-ready cost (MVP + traction):</strong> $50,000 – $150,000</li>
+    </ul>
+    <p><strong>How many startups can we launch?</strong></p>
+    <ul>
+        <li><strong>At $1.2M/year:</strong> 40–120 MVPs, or 8–24 full-cycle startups (MVP → seed) per year</li>
+        <li><strong>At $6M/year:</strong> 200–600 MVPs, or 40–120 full-cycle startups per year</li>
+    </ul>
+    <p>With our community, every startup gets:</p>
+    <ul>
+        <li>Instant access to hundreds of beta testers and market survey participants</li>
+        <li>Built-in audience for product launches</li>
+        <li>Real-time customer feedback and guidance</li>
+        <li>Much higher odds of seed selection and VC interest—VCs love proven customer traction</li>
+    </ul>
+    <p>Systematic investment pools mean you can invest without feeling a burden, and you'll always see the ratio of micro-funders to startups in each pool. Your small monthly contribution can help launch dozens of real, lean, AI-powered businesses every year—businesses that reward contributors fairly and transparently.</p>
+</section>
+<section>
+    <h2>Institutional Investors: Guidance, Not Control</h2>
+    <p>We welcome industry guidance and partnership from institutional investors. But we are not looking for anyone to take over the core morality or governance of Apocrypha until our self-sustaining ethical mechanism is fully established. Your capital and expertise can help us scale, but the heart of the system—fairness, mutual support, and principled business—remains with the community.</p>
+</section>
+<section>
+    <h3>Micro-Investor Interest</h3>
+    <form action="/submit_micro_investor" method="post">
+        <label for="amount">How much would you consider investing monthly?</label><br>
+        <input type="number" id="amount" name="amount" min="10" max="1000" step="10" placeholder="$100" required><br>
+        <input type="email" name="email" placeholder="Your email (required)" required><br>
+        <button type="submit">Express Interest</button>
+    </form>
+</section>
+<section>
+    <h3>Institutional Investor Interest</h3>
+    <form action="/submit_institutional_investor" method="post">
+        <label for="org">Your organization or fund:</label><br>
+        <input type="text" id="org" name="org" required><br>
+        <input type="email" name="email" placeholder="Your email (required)" required><br>
+        <textarea name="message" rows="2" placeholder="Message or partnership proposal (optional)"></textarea><br>
+        <button type="submit">Contact Us</button>
+    </form>
+</section>
+{% endblock %} 

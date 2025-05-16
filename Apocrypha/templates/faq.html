@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}FAQ - Apocrypha{% endblock %}
+{% block content %}
+<section>
+    <h2>Frequently Asked Questions</h2>
+    <dl>
+        <dt>What is Apocrypha?</dt>
+        <dd>Apocrypha is a global, decentralized, ethics-driven startup ecosystem. It empowers people—especially in underdeveloped regions—to build startups, earn equity, and participate in a culture of principled, profitable business creation.</dd>
+        <dt>How can I contribute?</dt>
+        <dd>Join as a coder, idea contributor, labor contributor, or supporter. Every contribution is recognized through our equity and karma systems. See the Join page for more.</dd>
+        <dt>How does investment work?</dt>
+        <dd>Investors support individual startups, not Apocrypha itself. Funds are pooled and distributed transparently. Investment does not grant governance power.</dd>
+        <dt>What is the Agentic Startup Factory (ASF)?</dt>
+        <dd>The ASF is an open-source AI agent that helps refine ideas, form teams, allocate tasks, and suggest equity splits. All decisions are peer-reviewed and guided by ethical oversight.</dd>
+        <dt>How does the karma system work?</dt>
+        <dd>Karma points are earned by contributing, voting, and engaging ethically. Karma determines eligibility for the rotating ethics board and influences community decisions.</dd>
+        <dt>What is the Apocrypha-The Divinity NFT?</dt>
+        <dd>It is a symbolic, community-evolving NFT that represents our shared values and ethical culture. It is not about hierarchy or dogma, but about collective imagination and accountability.</dd>
+    </dl>
+</section>
+<section>
+    <h3>Ask a Question</h3>
+    <form action="/submit_faq" method="post">
+        <label for="faq_question">Your question:</label><br>
+        <textarea id="faq_question" name="faq_question" rows="2" required></textarea><br>
+        <input type="email" name="email" placeholder="Your email (optional)"><br>
+        <button type="submit">Submit</button>
+    </form>
+</section>
+{% endblock %} 

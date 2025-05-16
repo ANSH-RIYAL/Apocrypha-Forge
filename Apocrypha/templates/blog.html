@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Apocrypha Blog{% endblock %}
+{% block content %}
+<section>
+    <h2>Memetic Essays & Stories</h2>
+    <p>Apocrypha's blog is a space for essays, memes, and stories that explore the intersection of ethics, technology, and collective business creation. We believe in the power of narrative and meme culture to inspire, unite, and drive principled, profitable innovation. Share your stories about how ethical business can be both successful and fair.</p>
+    <ul>
+        <li>Read essays on decentralized ethics, startup journeys, and the evolution of the Apocrypha-The Divinity NFT.</li>
+        <li>Discover memes that capture the spirit of communal creation and principled innovation.</li>
+        <li>Submit your own stories, reflections, or memes to help shape the Apocrypha mythos.</li>
+    </ul>
+    <p>Coming soon: our first essay series and community meme gallery. Stay tuned!</p>
+</section>
+<section>
+    <h3>Submit an Essay or Meme</h3>
+    <form action="/submit_blog" method="post">
+        <label for="blog_content">Your essay, story, or meme:</label><br>
+        <textarea id="blog_content" name="blog_content" rows="3" required></textarea><br>
+        <input type="email" name="email" placeholder="Your email (optional)"><br>
+        <button type="submit">Submit</button>
+    </form>
+</section>
+{% endblock %} 

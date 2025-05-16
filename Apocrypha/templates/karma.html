@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Karma & Ethics Zone{% endblock %}
+{% block content %}
+<section>
+    <h2>Gamified Ethics</h2>
+    <p>The Apocrypha karma system rewards empathy, ethical clarity, and meaningful contribution. Earn karma by participating in the public voice forum, helping others, and advancing the mission. Karma points determine eligibility for the rotating ethics board and influence community decisions. This is not about self-sacrifice—it's about building a principled, profitable business culture where helping others is a strategic advantage.</p>
+    <h3>The Apocrypha-The Divinity NFT Meme Engine</h3>
+    <p>Every day, the community votes on the next visual form of "Apocrypha-The Divinity"—a symbolic, ever-evolving NFT that anchors our shared values. This playful, non-monetary badge is a celebration of collective imagination and moral accountability, not hierarchy or dogma.</p>
+    <ul>
+        <li>Daily votes lock in the image for 24 hours.</li>
+        <li>Participation is open to all.</li>
+        <li>Builds meme culture and emotional resonance around ethics and business success.</li>
+    </ul>
+    <p>Through karma and memes, we inspire action, empathy, and a sense of belonging—making morality a core part of business, not a burden.</p>
+</section>
+<section>
+    <h3>Suggest a Karma/Ethics Feature</h3>
+    <form action="/submit_karma_suggestion" method="post">
+        <label for="karma_suggestion">Your suggestion or question:</label><br>
+        <textarea id="karma_suggestion" name="karma_suggestion" rows="3" required></textarea><br>
+        <input type="email" name="email" placeholder="Your email (optional)"><br>
+        <button type="submit">Submit</button>
+    </form>
+</section>
+{% endblock %} 

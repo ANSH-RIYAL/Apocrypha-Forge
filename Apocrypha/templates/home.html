@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Apocrypha - Home{% endblock %}
+{% block content %}
+<section>
+    <h2>Welcome to Apocrypha</h2>
+    <p>Apocrypha is a global, decentralized, ethics-driven startup ecosystem. We are not a charity or a fund—we are a business creation engine where fairness, collaboration, and long-term thinking are competitive advantages. Here, being ethical and being profitable are not opposites. We let startups operate as they will, with only a few simple beliefs: help others, especially your fellow startups; invest in each other and share equity; avoid underhanded tricks; and focus on long-term relationships over short-term profits.</p>
+    <ul>
+        <li><strong>Mission:</strong> Democratize startup creation and participation. Encourage moral behavior and responsibility through empathy-driven, gamified ethics—not centralized control.</li>
+        <li><strong>ASF (Agentic Startup Factory):</strong> An open-source AI agent that helps refine ideas, form teams, allocate tasks, and suggest equity splits—always guided by human review and ethical oversight.</li>
+        <li><strong>Equity & Governance:</strong> Earn equity by contributing. All proposals are peer-reviewed, with an ethics board for oversight. Power rotates, never accumulates. Even core contributors are guiding elders, not permanent leaders.</li>
+        <li><strong>Community Advantage:</strong> Our community provides unlimited beta testers, market surveys, and a built-in audience for every launch. This means better products, faster feedback, and a proven customer base—exactly what VCs want to see.</li>
+        <li><strong>Investment Model:</strong> Systematic investment pools let anyone invest without burden, helping launch dozens of lean, AI-powered businesses every year. Your contribution helps build a fair, profitable, and sustainable ecosystem.</li>
+        <li><strong>Meme & Morality:</strong> Our evolving "Apocrypha-The Divinity" NFT and karma system gamify empathy and ethical action, building a culture of shared responsibility and inspiration.</li>
+    </ul>
+    <p><a href="/vision">Read the Manifesto</a> or <a href="/join">Join the Movement</a> to get started.</p>
+</section>
+<section>
+    <h3>Share Your Thoughts</h3>
+    <form action="/submit_suggestion" method="post">
+        <label for="suggestion">Your suggestion or question:</label><br>
+        <textarea id="suggestion" name="suggestion" rows="3" required></textarea><br>
+        <input type="email" name="email" placeholder="Your email (optional)"><br>
+        <button type="submit">Submit</button>
+    </form>
+</section>
+{% endblock %} 
