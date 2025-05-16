@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, flash
 import smtplib
 from email.mime.text import MIMEText
+import os
 
 app = Flask(__name__)
 app.secret_key = 'apocrypha_secret_key'  # Needed for flash messages
@@ -126,4 +127,5 @@ def submit_contact():
     return redirect('/contact')
 
 if __name__ == '__main__':
-    app.run(debug=True) 
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=True) 
