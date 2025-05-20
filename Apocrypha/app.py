@@ -1,24 +1,28 @@
 from flask import Flask, render_template, request, redirect, flash
-import smtplib
-from email.mime.text import MIMEText
 import os
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
 app = Flask(__name__)
 app.secret_key = 'apocrypha_secret_key'  # Needed for flash messages
 
 EMAIL_TO = 'ansh.riyal@nyu.edu'
-EMAIL_FROM = 'no-reply@apocrypha.org'  # Placeholder, not used unless SMTP is set up
+EMAIL_FROM = 'ansh.riyal@nyu.edu'  # Use your verified sender email
+SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
 
-# Helper function to send email (prints to console as placeholder)
 def send_email(subject, body):
-    print(f"\n--- EMAIL TO: {EMAIL_TO} ---\nSUBJECT: {subject}\nBODY:\n{body}\n--- END EMAIL ---\n")
-    # To enable real email, configure SMTP and uncomment below:
-    # msg = MIMEText(body)
-    # msg['Subject'] = subject
-    # msg['From'] = EMAIL_FROM
-    # msg['To'] = EMAIL_TO
-    # with smtplib.SMTP('localhost') as server:
-    #     server.sendmail(EMAIL_FROM, [EMAIL_TO], msg.as_string())
+    message = Mail(
+        from_email=EMAIL_FROM,
+        to_emails=EMAIL_TO,
+        subject=subject,
+        plain_text_content=body
+    )
+    try:
+        sg = SendGridAPIClient(SENDGRID_API_KEY)
+        response = sg.send(message)
+        print(f"SendGrid response: {response.status_code}")
+    except Exception as e:
+        print(f"SendGrid error: {e}")
 
 @app.route('/')
 def home():

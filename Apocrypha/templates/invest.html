@@ -34,21 +34,10 @@
 </section>
 <section>
     <h3>Micro-Investor Interest</h3>
-    <form action="/submit_micro_investor" method="post">
-        <label for="amount">How much would you consider investing monthly?</label><br>
-        <input type="number" id="amount" name="amount" min="10" max="1000" step="10" placeholder="$100" required><br>
-        <input type="email" name="email" placeholder="Your email (required)" required><br>
-        <button type="submit">Express Interest</button>
-    </form>
+    <a href="mailto:ansh.riyal@nyu.edu?subject=Micro-Investor%20Interest%20in%20Apocrypha" class="mailto-btn">Click here to email your interest as a micro-investor</a>
 </section>
 <section>
     <h3>Institutional Investor Interest</h3>
-    <form action="/submit_institutional_investor" method="post">
-        <label for="org">Your organization or fund:</label><br>
-        <input type="text" id="org" name="org" required><br>
-        <input type="email" name="email" placeholder="Your email (required)" required><br>
-        <textarea name="message" rows="2" placeholder="Message or partnership proposal (optional)"></textarea><br>
-        <button type="submit">Contact Us</button>
-    </form>
+    <a href="mailto:ansh.riyal@nyu.edu?subject=Institutional%20Investor%20Interest%20in%20Apocrypha" class="mailto-btn">Click here to email your interest as an institutional investor</a>
 </section>
 {% endblock %} 
