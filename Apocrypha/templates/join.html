@@ -12,6 +12,11 @@
 </section>
 <section>
     <h3>Join the Movement</h3>
-    <a href="mailto:ansh.riyal@nyu.edu?subject=Join%20Request%20for%20Apocrypha" class="mailto-btn">Click here to email your interest in joining</a>
+    <form action="/submit_join" method="post">
+        <label for="interest">How do you want to contribute?</label><br>
+        <input type="text" id="interest" name="interest" required><br>
+        <input type="email" name="email" placeholder="Your email (optional)" autocomplete="email" value="{{ email|default('') }}"><br>
+        <button type="submit">Submit</button>
+    </form>
 </section>
 {% endblock %} 

@@ -1,33 +1,47 @@
-from flask import Flask, render_template, request, redirect, flash
+from flask import Flask, render_template, request, redirect, flash, session
 import os
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
-import subprocess
-import time
+import json
+from datetime import datetime
 import threading
+import time
+import subprocess
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='templates')
+print('>>> TEMPLATE FOLDER:', os.path.abspath(os.path.join(os.path.dirname(__file__), 'templates')))
 app.secret_key = 'apocrypha_secret_key'  # Needed for flash messages
 
-EMAIL_TO = 'ansh.riyal@nyu.edu'
-EMAIL_FROM = 'ansh.riyal@nyu.edu'  # Use your verified sender email
-SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
-DATA_FILE = 'interest_data.json'  # Assuming a default data file
+# Always use the project root for interest_data.json
+DATA_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'interest_data.json'))
 
-def send_email(subject, body):
-    message = Mail(
-        from_email=EMAIL_FROM,
-        to_emails=EMAIL_TO,
-        subject=subject,
-        plain_text_content=body
-    )
-    try:
-        sg = SendGridAPIClient(SENDGRID_API_KEY)
-        response = sg.send(message)
-        print(f"SendGrid response: {response.status_code}")
-    except Exception as e:
-        print(f"SendGrid error: {e}")
+# Ensure the data file exists at startup
+if not os.path.exists(DATA_FILE):
+    with open(DATA_FILE, 'w') as f:
+        json.dump({}, f)
 
+# Helper to load and save JSON data
+def load_data():
+    if not os.path.exists(DATA_FILE):
+        return {}
+    with open(DATA_FILE, 'r') as f:
+        try:
+            return json.load(f)
+        except Exception:
+            return {}
+
+def save_data(data):
+    with open(DATA_FILE, 'w') as f:
+        json.dump(data, f, indent=2)
+
+# Save a submission to the JSON file
+def save_submission(form_type, entry):
+    data = load_data()
+    if form_type not in data:
+        data[form_type] = []
+    entry['timestamp'] = datetime.utcnow().isoformat()
+    data[form_type].append(entry)
+    save_data(data)
+
+# Git sync logic
 def git_sync():
     try:
         subprocess.run(['git', 'add', DATA_FILE], check=True)
@@ -38,53 +52,51 @@ def git_sync():
         print(f'Git sync error: {e}')
 
 def start_git_sync_thread():
-    def sync_loop():
-        while True:
-            time.sleep(3600)  # 1 hour
-            git_sync()
-    # Initial sync at startup
-    git_sync()
-    t = threading.Thread(target=sync_loop, daemon=True)
-    t.start()
+    pass  # Remove threading logic
 
-@app.route('/')
+def get_email():
+    return session.get('email', '')
+
+@app.route('/', methods=['GET'])
 def home():
-    return render_template('home.html')
+    return render_template('home.html', email=get_email())
 
 @app.route('/vision')
 def vision():
-    return render_template('vision.html')
+    return render_template('vision.html', email=get_email())
 
 @app.route('/join')
 def join():
-    return render_template('join.html')
+    return render_template('join.html', email=get_email())
 
 @app.route('/invest')
 def invest():
-    return render_template('invest.html')
+    return render_template('invest.html', email=get_email())
 
 @app.route('/karma')
 def karma():
-    return render_template('karma.html')
+    return render_template('karma.html', email=get_email())
 
 @app.route('/blog')
 def blog():
-    return render_template('blog.html')
+    return render_template('blog.html', email=get_email())
 
 @app.route('/faq')
 def faq():
-    return render_template('faq.html')
+    return render_template('faq.html', email=get_email())
 
 @app.route('/contact')
 def contact():
-    return render_template('contact.html')
+    return render_template('contact.html', email=get_email())
 
 # Form handlers
 @app.route('/submit_suggestion', methods=['POST'])
 def submit_suggestion():
     suggestion = request.form.get('suggestion')
     email = request.form.get('email')
-    send_email('New Suggestion', f"Suggestion: {suggestion}\nEmail: {email}")
+    if email:
+        session['email'] = email
+    save_submission('suggestion', {'suggestion': suggestion, 'email': email})
     flash('Thank you for your suggestion!')
     return redirect('/')
 
@@ -92,7 +104,9 @@ def submit_suggestion():
 def submit_manifesto_feedback():
     feedback = request.form.get('feedback')
     email = request.form.get('email')
-    send_email('Manifesto Feedback', f"Feedback: {feedback}\nEmail: {email}")
+    if email:
+        session['email'] = email
+    save_submission('manifesto_feedback', {'feedback': feedback, 'email': email})
     flash('Thank you for your feedback!')
     return redirect('/vision')
 
@@ -100,7 +114,9 @@ def submit_manifesto_feedback():
 def submit_join():
     interest = request.form.get('interest')
     email = request.form.get('email')
-    send_email('Join Request', f"Interest: {interest}\nEmail: {email}")
+    if email:
+        session['email'] = email
+    save_submission('join', {'interest': interest, 'email': email})
     flash('Thank you for joining! We will be in touch.')
     return redirect('/join')
 
@@ -108,7 +124,9 @@ def submit_join():
 def submit_micro_investor():
     amount = request.form.get('amount')
     email = request.form.get('email')
-    send_email('Micro-Investor Interest', f"Amount: {amount}\nEmail: {email}")
+    if email:
+        session['email'] = email
+    save_submission('micro_investor', {'amount': amount, 'email': email})
     flash('Thank you for your interest!')
     return redirect('/invest')
 
@@ -117,7 +135,9 @@ def submit_institutional_investor():
     org = request.form.get('org')
     email = request.form.get('email')
     message = request.form.get('message')
-    send_email('Institutional Investor Interest', f"Org: {org}\nEmail: {email}\nMessage: {message}")
+    if email:
+        session['email'] = email
+    save_submission('institutional_investor', {'org': org, 'email': email, 'message': message})
     flash('Thank you for reaching out!')
     return redirect('/invest')
 
@@ -125,7 +145,9 @@ def submit_institutional_investor():
 def submit_karma_suggestion():
     suggestion = request.form.get('karma_suggestion')
     email = request.form.get('email')
-    send_email('Karma/Ethics Suggestion', f"Suggestion: {suggestion}\nEmail: {email}")
+    if email:
+        session['email'] = email
+    save_submission('karma_suggestion', {'suggestion': suggestion, 'email': email})
     flash('Thank you for your suggestion!')
     return redirect('/karma')
 
@@ -133,7 +155,9 @@ def submit_karma_suggestion():
 def submit_blog():
     content = request.form.get('blog_content')
     email = request.form.get('email')
-    send_email('Blog Submission', f"Content: {content}\nEmail: {email}")
+    if email:
+        session['email'] = email
+    save_submission('blog', {'content': content, 'email': email})
     flash('Thank you for your submission!')
     return redirect('/blog')
 
@@ -141,7 +165,9 @@ def submit_blog():
 def submit_faq():
     question = request.form.get('faq_question')
     email = request.form.get('email')
-    send_email('FAQ Question', f"Question: {question}\nEmail: {email}")
+    if email:
+        session['email'] = email
+    save_submission('faq', {'question': question, 'email': email})
     flash('Thank you for your question!')
     return redirect('/faq')
 
@@ -149,11 +175,23 @@ def submit_faq():
 def submit_contact():
     message = request.form.get('message')
     email = request.form.get('email')
-    send_email('Contact Form', f"Message: {message}\nEmail: {email}")
+    if email:
+        session['email'] = email
+    save_submission('contact', {'message': message, 'email': email})
     flash('Thank you for reaching out!')
     return redirect('/contact')
 
+@app.route('/test')
+def test():
+    return 'Flask is working!'
+
+@app.route('/sync_interest_data', methods=['POST'])
+def sync_interest_data():
+    git_sync()
+    return 'Interest data synced to git.', 200
+
 if __name__ == '__main__':
-    start_git_sync_thread()
+    print(">>> RUNNING FROM:", os.path.abspath(__file__))
+    git_sync()  # Sync once at startup
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True) 

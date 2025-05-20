@@ -10,6 +10,11 @@
 </section>
 <section>
     <h3>Contact Form</h3>
-    <a href="mailto:ansh.riyal@nyu.edu?subject=Contact%20from%20Apocrypha%20Website" class="mailto-btn">Click here to email us directly</a>
+    <form action="/submit_contact" method="post">
+        <label for="message">Your message:</label><br>
+        <textarea id="message" name="message" rows="3" required></textarea><br>
+        <input type="email" name="email" placeholder="Your email (optional)" autocomplete="email" value="{{ email|default('') }}"><br>
+        <button type="submit">Submit</button>
+    </form>
 </section>
 {% endblock %} 

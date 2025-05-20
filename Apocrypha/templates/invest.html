@@ -34,10 +34,22 @@
 </section>
 <section>
     <h3>Micro-Investor Interest</h3>
-    <a href="mailto:ansh.riyal@nyu.edu?subject=Micro-Investor%20Interest%20in%20Apocrypha" class="mailto-btn">Click here to email your interest as a micro-investor</a>
+    <form action="/submit_micro_investor" method="post">
+        <label for="amount">How much would you like to invest monthly?</label><br>
+        <input type="text" id="amount" name="amount" required><br>
+        <input type="email" name="email" placeholder="Your email (optional)" autocomplete="email" value="{{ email|default('') }}"><br>
+        <button type="submit">Submit</button>
+    </form>
 </section>
 <section>
     <h3>Institutional Investor Interest</h3>
-    <a href="mailto:ansh.riyal@nyu.edu?subject=Institutional%20Investor%20Interest%20in%20Apocrypha" class="mailto-btn">Click here to email your interest as an institutional investor</a>
+    <form action="/submit_institutional_investor" method="post">
+        <label for="org">Organization Name:</label><br>
+        <input type="text" id="org" name="org" required><br>
+        <label for="message">Message:</label><br>
+        <textarea id="message" name="message" rows="3"></textarea><br>
+        <input type="email" name="email" placeholder="Your email (optional)" autocomplete="email" value="{{ email|default('') }}"><br>
+        <button type="submit">Submit</button>
+    </form>
 </section>
 {% endblock %} 
