@@ -2,6 +2,9 @@ from flask import Flask, render_template, request, redirect, flash
 import os
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
+import subprocess
+import time
+import threading
 
 app = Flask(__name__)
 app.secret_key = 'apocrypha_secret_key'  # Needed for flash messages
@@ -9,6 +12,7 @@ app.secret_key = 'apocrypha_secret_key'  # Needed for flash messages
 EMAIL_TO = 'ansh.riyal@nyu.edu'
 EMAIL_FROM = 'ansh.riyal@nyu.edu'  # Use your verified sender email
 SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
+DATA_FILE = 'interest_data.json'  # Assuming a default data file
 
 def send_email(subject, body):
     message = Mail(
@@ -23,6 +27,25 @@ def send_email(subject, body):
         print(f"SendGrid response: {response.status_code}")
     except Exception as e:
         print(f"SendGrid error: {e}")
+
+def git_sync():
+    try:
+        subprocess.run(['git', 'add', DATA_FILE], check=True)
+        subprocess.run(['git', 'commit', '-m', 'Sync interest data', '--allow-empty'], check=True)
+        subprocess.run(['git', 'push'], check=True)
+        print('Interest data synced to git.')
+    except Exception as e:
+        print(f'Git sync error: {e}')
+
+def start_git_sync_thread():
+    def sync_loop():
+        while True:
+            time.sleep(3600)  # 1 hour
+            git_sync()
+    # Initial sync at startup
+    git_sync()
+    t = threading.Thread(target=sync_loop, daemon=True)
+    t.start()
 
 @app.route('/')
 def home():
@@ -131,5 +154,6 @@ def submit_contact():
     return redirect('/contact')
 
 if __name__ == '__main__':
+    start_git_sync_thread()
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True) 
