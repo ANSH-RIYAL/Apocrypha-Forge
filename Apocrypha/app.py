@@ -44,6 +44,18 @@ def save_submission(form_type, entry):
 # Git sync logic
 def git_sync():
     try:
+        github_id = os.environ.get('GITHUB_ID')
+        github_email = os.environ.get('GITHUB_EMAIL')
+        github_token = os.environ.get('GITHUB_TOKEN')
+        if github_id and github_email and github_token:
+            # Set git user config
+            subprocess.run(['git', 'config', 'user.name', github_id], check=True)
+            subprocess.run(['git', 'config', 'user.email', github_email], check=True)
+            # Set remote url with token for authentication
+            subprocess.run([
+                'git', 'remote', 'set-url', 'origin',
+                f'https://{github_id}:{github_token}@github.com/{github_id}/Apocrypha.git'
+            ], check=True)
         subprocess.run(['git', 'add', DATA_FILE], check=True)
         subprocess.run(['git', 'commit', '-m', 'Sync interest data', '--allow-empty'], check=True)
         subprocess.run(['git', 'push'], check=True)
