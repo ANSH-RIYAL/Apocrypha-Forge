@@ -1,0 +1,20 @@
+{
+  "idea_id": "idea_123",
+  "session_id": "sample_session_123",
+  "title": "AI-Powered Task Management",
+  "description": "An intelligent task management system that uses AI to prioritize and organize work",
+  "submitted_at": "2025-07-08T10:22:15.970964",
+  "considerations": {
+    "problem_definition": "Knowledge workers struggle with task prioritization and time management...",
+    "target_market": "Professionals and teams in knowledge-intensive industries...",
+    "solution_approach": "AI-powered task management with smart prioritization...",
+    "competitive_analysis": "Competing with tools like Todoist, Asana, but with AI differentiation...",
+    "business_model": "Freemium SaaS model with premium AI features...",
+    "technical_feasibility": "Requires NLP, machine learning, and web development expertise...",
+    "team_structure": "Need AI engineer, full-stack developer, product manager...",
+    "growth_strategy": "Content marketing, integration partnerships, viral features..."
+  },
+  "status": "published",
+  "views": 0,
+  "implementations": []
+}

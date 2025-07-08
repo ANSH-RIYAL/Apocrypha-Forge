@@ -1,0 +1,54 @@
+{
+  "database": {
+    "type": "json_file",
+    "base_path": "data",
+    "auto_backup": true,
+    "max_file_size_mb": 10
+  },
+  "considerations": [
+    {
+      "id": "problem_definition",
+      "title": "Problem Definition",
+      "description": "Clearly define the problem you're solving and why it matters"
+    },
+    {
+      "id": "target_market",
+      "title": "Target Market",
+      "description": "Identify your ideal customers and market size"
+    },
+    {
+      "id": "solution_approach",
+      "title": "Solution Approach",
+      "description": "Outline your proposed solution and its key features"
+    },
+    {
+      "id": "competitive_analysis",
+      "title": "Competitive Analysis",
+      "description": "Analyze competitors and your competitive advantage"
+    },
+    {
+      "id": "business_model",
+      "title": "Business Model",
+      "description": "Define how you'll make money and serve customers"
+    },
+    {
+      "id": "technical_feasibility",
+      "title": "Technical Feasibility",
+      "description": "Assess technical requirements and implementation challenges"
+    },
+    {
+      "id": "team_structure",
+      "title": "Team Structure",
+      "description": "Define roles needed and team composition"
+    },
+    {
+      "id": "growth_strategy",
+      "title": "Growth Strategy",
+      "description": "Plan for customer acquisition and business scaling"
+    }
+  ],
+  "submission_requirements": {
+    "min_completed_considerations": 6,
+    "min_words_per_consideration": 100
+  }
+}

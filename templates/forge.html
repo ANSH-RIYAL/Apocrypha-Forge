@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block title %}The Forge - AI Startup Development{% endblock %}
+
+{% block head %}
+<style>
+    .chat-container {
+        height: 75vh;
+        overflow-y: auto;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        padding: 1rem;
+        background: #ffffff;
+    }
+    
+    .consideration-box {
+        border: 2px solid #dee2e6;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        background: #ffffff;
+        transition: all 0.3s ease;
+        min-height: 120px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .consideration-box.completed {
+        border-color: #198754;
+        background: #d1e7dd;
+    }
+    
+    .consideration-box.in-progress {
+        border-color: #ffc107;
+        background: #fff3cd;
+    }
+    
+    .consideration-box.updating {
+        border-color: #0dcaf0;
+        background: #cff4fc;
+        animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.8; }
+        100% { opacity: 1; }
+    }
+    
+    .consideration-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .consideration-text {
+        font-size: 0.85rem;
+        line-height: 1.4;
+        min-height: 60px;
+        color: #212529;
+        white-space: pre-wrap;
+    }
+    
+    .consideration-text.placeholder {
+        color: #6c757d;
+        font-style: italic;
+    }
+    
+    .considerations-panel {
+        max-height: 85vh;
+        overflow-y: auto;
+        padding-right: 0.5rem;
+    }
+    
+    .considerations-panel::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .considerations-panel::-webkit-scrollbar-track {
+        background: #ffffff;
+    }
+    
+    .considerations-panel::-webkit-scrollbar-thumb {
+        background: #6c757d;
+        border-radius: 3px;
+    }
+    
+    .message {
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        border-radius: 0.375rem;
+    }
+    
+    .message.user {
+        background: #cfe2ff;
+        margin-left: 2rem;
+    }
+    
+    .message.assistant {
+        background: #f8f9fa;
+        margin-right: 2rem;
+    }
+    
+    .progress-indicator {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background: #ffffff;
+        border-bottom: 1px solid #dee2e6;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .typing-indicator {
+        display: none;
+        font-style: italic;
+        color: #6c757d;
+    }
+    
+    .edit-consideration {
+        opacity: 0.7;
+        transition: opacity 0.2s ease;
+    }
+    
+    .consideration-box:hover .edit-consideration {
+        opacity: 1;
+    }
+    
+    @media (max-width: 992px) {
+        .considerations-panel {
+            max-height: none;
+            margin-bottom: 2rem;
+        }
+        
+        .chat-container {
+            height: 50vh;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Progress Indicator -->
+    <div class="progress-indicator py-3">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0">The Forge</h5>
+                    <small class="text-muted">AI Development Session: {{ session_data.session_id if session_data else 'New Session' }}</small>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="progress" style="width: 200px;">
+                        <div class="progress-bar" role="progressbar" style="width: 0%" id="progressBar"></div>
+                    </div>
+                    <span class="text-muted" id="progressText">0/8 Complete</span>
+                    <button class="btn btn-success btn-sm" id="submitBtn" disabled>
+                        <i class="bi bi-share me-1"></i>Publish Idea
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <!-- Chat Interface - Central -->
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="bi bi-chat-dots me-2"></i>AI Assistant
+                        </h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="chat-container" id="chatContainer">
+                            <div class="message assistant">
+                                <strong>AI:</strong> Welcome to The Forge! I'm here to help develop your startup idea. Share your vision, describe an automation opportunity, or tell me about a problem you'd like to solve. As we chat, I'll automatically fill out the business considerations you see on the sides.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="typing-indicator" id="typingIndicator">
+                            AI is thinking...
+                        </div>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="messageInput" placeholder="Tell me about your idea, automation opportunity, or problem you want to solve..." maxlength="1000">
+                            <button class="btn btn-primary" type="button" id="sendBtn">
+                                <i class="bi bi-send"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Left Considerations Panel -->
+            <div class="col-lg-3 order-first">
+                <div class="considerations-panel">
+                    {% for consideration in considerations[:4] %}
+                    <div class="consideration-box mb-3" data-consideration-id="{{ consideration.id }}">
+                        <div class="consideration-header">
+                            <span class="consideration-status me-2">
+                                <i class="bi bi-circle text-muted"></i>
+                            </span>
+                            <strong class="consideration-title">{{ consideration.title }}</strong>
+                        </div>
+                        <div class="consideration-content">
+                            <div class="consideration-text" id="text-{{ consideration.id }}">
+                                {{ session_data.considerations[consideration.id] if session_data and consideration.id in session_data.considerations else 'Will be filled by AI...' }}
+                            </div>
+                            <div class="consideration-edit d-none">
+                                <textarea class="form-control consideration-textarea" 
+                                          data-consideration-id="{{ consideration.id }}" 
+                                          rows="4">{{ session_data.considerations[consideration.id] if session_data and consideration.id in session_data.considerations else '' }}</textarea>
+                                <div class="mt-2 d-flex justify-content-between">
+                                    <small class="text-muted word-count">
+                                        <span class="current-words">0</span> words
+                                    </small>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary save-consideration" 
+                                                data-consideration-id="{{ consideration.id }}">
+                                            <i class="bi bi-save me-1"></i>Save
+                                        </button>
+                                        <button class="btn btn-sm btn-secondary cancel-edit" 
+                                                data-consideration-id="{{ consideration.id }}">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary edit-consideration mt-2" 
+                                    data-consideration-id="{{ consideration.id }}">
+                                <i class="bi bi-pencil me-1"></i>Edit
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Right Considerations Panel -->
+            <div class="col-lg-3">
+                <div class="considerations-panel">
+                    {% for consideration in considerations[4:] %}
+                    <div class="consideration-box mb-3" data-consideration-id="{{ consideration.id }}">
+                        <div class="consideration-header">
+                            <span class="consideration-status me-2">
+                                <i class="bi bi-circle text-muted"></i>
+                            </span>
+                            <strong class="consideration-title">{{ consideration.title }}</strong>
+                        </div>
+                        <div class="consideration-content">
+                            <div class="consideration-text" id="text-{{ consideration.id }}">
+                                {{ session_data.considerations[consideration.id] if session_data and consideration.id in session_data.considerations else 'Will be filled by AI...' }}
+                            </div>
+                            <div class="consideration-edit d-none">
+                                <textarea class="form-control consideration-textarea" 
+                                          data-consideration-id="{{ consideration.id }}" 
+                                          rows="4">{{ session_data.considerations[consideration.id] if session_data and consideration.id in session_data.considerations else '' }}</textarea>
+                                <div class="mt-2 d-flex justify-content-between">
+                                    <small class="text-muted word-count">
+                                        <span class="current-words">0</span> words
+                                    </small>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary save-consideration" 
+                                                data-consideration-id="{{ consideration.id }}">
+                                            <i class="bi bi-save me-1"></i>Save
+                                        </button>
+                                        <button class="btn btn-sm btn-secondary cancel-edit" 
+                                                data-consideration-id="{{ consideration.id }}">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary edit-consideration mt-2" 
+                                    data-consideration-id="{{ consideration.id }}">
+                                <i class="bi bi-pencil me-1"></i>Edit
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Submit Modal -->
+<div class="modal fade" id="submitModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Submit to Marketplace</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you ready to publish your startup idea for developers and implementers to see?</p>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Your developed idea will be available for potential implementers to review. If someone builds your concept, you'll be rewarded for your contribution and can join as a subject matter expert.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmSubmit">
+                    <i class="bi bi-share me-1"></i>Publish Idea
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/forge.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,26 @@
+{
+  "session_id": "sample_session_123",
+  "created_at": "2025-07-08T10:22:15.970931",
+  "last_updated": "2025-07-08T10:22:15.970957",
+  "considerations": {
+    "problem_definition": "",
+    "target_market": "",
+    "solution_approach": "",
+    "competitive_analysis": "",
+    "business_model": "",
+    "technical_feasibility": "",
+    "team_structure": "",
+    "growth_strategy": ""
+  },
+  "chat_history": [
+    {
+      "timestamp": "2025-07-08T10:22:15.970960",
+      "sender": "assistant",
+      "message": "Welcome to The Forge! Let's develop your startup idea together."
+    }
+  ],
+  "metadata": {
+    "ip_address": "127.0.0.1",
+    "user_agent": "sample"
+  }
+}

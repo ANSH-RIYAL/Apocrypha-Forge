@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}Apocrypha Forge - Agentic Startup Factory{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Hero Section -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-8 text-center">
+            <div class="mb-4">
+                <i class="bi bi-gear-fill display-1 text-primary"></i>
+            </div>
+            <h1 class="display-4 fw-bold mb-4">Welcome to The Forge</h1>
+            <p class="lead mb-4">
+                Transform your ideas into structured startup plans with our AI assistant. 
+                Whether you're a subject matter expert who sees automation opportunities, 
+                or a developer ready to implement innovative concepts - collaborate, 
+                contribute, and earn equity for your expertise.
+            </p>
+            <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                <a href="{{ url_for('forge') }}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-chat-dots me-2"></i>Start Ideating
+                </a>
+                <a href="{{ url_for('marketplace') }}" class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-lightbulb me-2"></i>Browse Ideas
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="row mb-5">
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-robot display-4 text-primary mb-3"></i>
+                    <h5 class="card-title">For Ideators</h5>
+                    <p class="card-text">
+                        Share your vision and domain expertise. Our AI develops comprehensive business plans 
+                        from your ideas, connecting you with implementers who can bring them to life.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-people display-4 text-success mb-3"></i>
+                    <h5 class="card-title">For Developers</h5>
+                    <p class="card-text">
+                        Find structured startup concepts ready for implementation. Use tools like Replit 
+                        to build alongside ideators and domain experts, earning equity through contribution.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-shield-check display-4 text-info mb-3"></i>
+                    <h5 class="card-title">Team Formation</h5>
+                    <p class="card-text">
+                        Connect ideators with implementers. Fill platform roles, contribute to tasks, 
+                        and get assigned equity based on your contributions and expertise level.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="text-center mb-4">How It Works</h2>
+        </div>
+        
+        <div class="col-lg-3 mb-4">
+            <div class="text-center">
+                <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <span class="text-white fw-bold">1</span>
+                </div>
+                <h6>Share Your Expertise</h6>
+                <p class="text-muted small">Ideators share visions, developers find implementation opportunities</p>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 mb-4">
+            <div class="text-center">
+                <div class="bg-success rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <span class="text-white fw-bold">2</span>
+                </div>
+                <h6>AI Structures It</h6>
+                <p class="text-muted small">AI develops comprehensive business plans from conversations</p>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 mb-4">
+            <div class="text-center">
+                <div class="bg-info rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <span class="text-white fw-bold">3</span>
+                </div>
+                <h6>Build & Collaborate</h6>
+                <p class="text-muted small">Teams form around ideas, using tools like Replit to build together</p>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 mb-4">
+            <div class="text-center">
+                <div class="bg-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <span class="text-white fw-bold">4</span>
+                </div>
+                <h6>Earn Equity</h6>
+                <p class="text-muted small">All contributors earn equity based on their role and contributions</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Considerations Preview -->
+    <div class="row">
+        <div class="col-12">
+            <h2 class="text-center mb-4">What Gets Developed</h2>
+            <p class="text-center text-muted mb-4">
+                Our AI automatically develops these 8 essential business areas as you chat:
+            </p>
+        </div>
+        
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-exclamation-triangle text-primary mb-2"></i>
+                    <h6 class="card-title">Problem Definition</h6>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-bullseye text-success mb-2"></i>
+                    <h6 class="card-title">Target Market</h6>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-lightbulb text-warning mb-2"></i>
+                    <h6 class="card-title">Solution Approach</h6>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-graph-up text-info mb-2"></i>
+                    <h6 class="card-title">Growth Strategy</h6>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-trophy text-danger mb-2"></i>
+                    <h6 class="card-title">Competitive Analysis</h6>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-currency-dollar text-success mb-2"></i>
+                    <h6 class="card-title">Business Model</h6>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-gear text-secondary mb-2"></i>
+                    <h6 class="card-title">Technical Feasibility</h6>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="bi bi-people-fill text-primary mb-2"></i>
+                    <h6 class="card-title">Team Structure</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="row mt-5">
+        <div class="col-12 text-center">
+            <div class="bg-primary bg-opacity-10 rounded p-4">
+                <h3 class="mb-3">Ready to Develop Your Vision?</h3>
+                <p class="mb-4">
+                    Whether you're a domain expert or see automation opportunities, 
+                    start building your ideas into structured startup plans.
+                </p>
+                <a href="{{ url_for('forge') }}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-chat-dots me-2"></i>Start Building
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

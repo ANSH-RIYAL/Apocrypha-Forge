@@ -1,0 +1,195 @@
+/* Custom styles for Apocrypha Forge */
+
+/* Chat Interface */
+.chat-container {
+    scrollbar-width: thin;
+    scrollbar-color: var(--bs-secondary) var(--bs-body-bg);
+}
+
+.chat-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.chat-container::-webkit-scrollbar-track {
+    background: var(--bs-body-bg);
+}
+
+.chat-container::-webkit-scrollbar-thumb {
+    background: var(--bs-secondary);
+    border-radius: 4px;
+}
+
+.message {
+    word-wrap: break-word;
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Consideration Cards */
+.consideration-card {
+    border: 2px solid var(--bs-border-color);
+}
+
+.consideration-card.completed {
+    border-color: var(--bs-success) !important;
+}
+
+.consideration-card.in-progress {
+    border-color: var(--bs-warning) !important;
+}
+
+.consideration-status i {
+    transition: all 0.3s ease;
+}
+
+.consideration-status i.bi-check-circle {
+    color: var(--bs-success) !important;
+}
+
+.consideration-status i.bi-clock {
+    color: var(--bs-warning) !important;
+}
+
+/* Progress Bar */
+.progress-indicator {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Marketplace Cards */
+.idea-card {
+    transition: transform 0.2s ease;
+}
+
+.idea-card:hover {
+    transform: translateY(-2px);
+}
+
+.idea-card .card {
+    transition: box-shadow 0.2s ease;
+}
+
+.idea-card:hover .card {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .chat-container {
+        height: 50vh;
+    }
+    
+    .progress-indicator .d-flex {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .progress-indicator .progress {
+        width: 100% !important;
+    }
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.typing-indicator {
+    padding: 0.5rem;
+    font-size: 0.9rem;
+}
+
+/* Form enhancements */
+.form-control:focus {
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+.btn {
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Accordion customizations */
+.accordion-button:not(.collapsed) {
+    background-color: var(--bs-primary-bg-subtle);
+    border-color: var(--bs-primary-border-subtle);
+}
+
+.accordion-button:focus {
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+/* Badge customizations */
+.badge {
+    font-size: 0.75em;
+}
+
+/* Card hover effects */
+.card {
+    transition: all 0.2s ease;
+}
+
+.card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Text utilities */
+.text-gradient {
+    background: linear-gradient(45deg, var(--bs-primary), var(--bs-info));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Animation classes */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+.slide-up {
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Utility classes */
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.user-select-none {
+    user-select: none;
+}
+
+/* Dark mode specific adjustments */
+[data-bs-theme="dark"] .card {
+    background-color: var(--bs-dark);
+    border-color: var(--bs-border-color);
+}
+
+[data-bs-theme="dark"] .accordion-button {
+    background-color: var(--bs-dark);
+    color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .modal-content {
+    background-color: var(--bs-dark);
+    border-color: var(--bs-border-color);
+}

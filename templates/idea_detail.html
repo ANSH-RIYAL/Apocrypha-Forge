@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block title %}{{ idea.title }} - Idea Details{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('marketplace') }}">Marketplace</a></li>
+            <li class="breadcrumb-item active">{{ idea.title }}</li>
+        </ol>
+    </nav>
+
+    <!-- Idea Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h1 class="mb-2">{{ idea.title }}</h1>
+                            <p class="text-muted mb-0">{{ idea.description }}</p>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-{% if idea.status == 'under_review' %}warning{% else %}success{% endif %} fs-6">
+                                {% if idea.status == 'under_review' %}
+                                    <i class="bi bi-clock me-1"></i>Under Review
+                                {% else %}
+                                    <i class="bi bi-check-circle me-1"></i>Reviewed
+                                {% endif %}
+                            </span>
+                            <div class="text-muted small mt-2">
+                                <i class="bi bi-eye me-1"></i>{{ idea.views }} views
+                                <i class="bi bi-chat ms-2 me-1"></i>{{ comments|length }} comments
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row text-muted small">
+                        <div class="col-md-6">
+                            <i class="bi bi-calendar me-1"></i>
+                            Submitted: {{ idea.submitted_at.split('T')[0] }}
+                        </div>
+                        {% if idea.status == 'under_review' %}
+                        <div class="col-md-6">
+                            <i class="bi bi-clock me-1"></i>
+                            Review until: {{ idea.review_until.split('T')[0] }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Considerations -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-check me-2"></i>Detailed Considerations
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="considerationsAccordion">
+                        {% set consideration_titles = {
+                            'problem_definition': 'Problem Definition',
+                            'target_market': 'Target Market',
+                            'solution_approach': 'Solution Approach',
+                            'competitive_analysis': 'Competitive Analysis',
+                            'business_model': 'Business Model',
+                            'technical_feasibility': 'Technical Feasibility',
+                            'team_structure': 'Team Structure',
+                            'growth_strategy': 'Growth Strategy'
+                        } %}
+                        
+                        {% for consideration_id, content in idea.considerations.items() %}
+                        {% if content.strip() %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" 
+                                        type="button" 
+                                        data-bs-toggle="collapse" 
+                                        data-bs-target="#collapse{{ loop.index }}">
+                                    <i class="bi bi-check-circle text-success me-2"></i>
+                                    {{ consideration_titles.get(consideration_id, consideration_id.replace('_', ' ').title()) }}
+                                    <small class="text-muted ms-2">({{ content.split()|length }} words)</small>
+                                </button>
+                            </h2>
+                            <div id="collapse{{ loop.index }}" 
+                                 class="accordion-collapse collapse {% if loop.first %}show{% endif %}" 
+                                 data-bs-parent="#considerationsAccordion">
+                                <div class="accordion-body">
+                                    <p class="mb-0">{{ content }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comments Section -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-chat-dots me-2"></i>Community Feedback
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Add Comment Form -->
+                    <div class="mb-4">
+                        <h6>Add Your Feedback</h6>
+                        <form id="commentForm">
+                            <div class="mb-3">
+                                <input type="text" class="form-control" id="authorName" placeholder="Your name (optional)" maxlength="50">
+                            </div>
+                            <div class="mb-3">
+                                <textarea class="form-control" id="commentText" rows="3" placeholder="Share your thoughts, suggestions, or questions..." maxlength="500" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="bi bi-send me-1"></i>Post Comment
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Comments List -->
+                    <div id="commentsList">
+                        {% if comments %}
+                            {% for comment in comments %}
+                            <div class="border-bottom pb-3 mb-3">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <strong class="small">{{ comment.author }}</strong>
+                                    <small class="text-muted">{{ comment.timestamp.split('T')[0] }}</small>
+                                </div>
+                                <p class="mb-0 small">{{ comment.content }}</p>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center text-muted py-4">
+                                <i class="bi bi-chat display-4"></i>
+                                <p class="mt-2">No comments yet. Be the first to share your thoughts!</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6>Interested in Collaborating?</h6>
+                    <p class="text-muted small mb-3">
+                        This idea is part of the Apocrypha ecosystem. If you're interested in joining 
+                        this startup or have suggestions for improvement, use the comments above.
+                    </p>
+                    <a href="{{ url_for('forge') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-hammer me-1"></i>Create Your Own Idea
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const commentForm = document.getElementById('commentForm');
+    const commentsList = document.getElementById('commentsList');
+    
+    commentForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const authorName = document.getElementById('authorName').value.trim() || 'Anonymous';
+        const commentText = document.getElementById('commentText').value.trim();
+        
+        if (!commentText) {
+            alert('Please enter a comment');
+            return;
+        }
+        
+        // Submit comment
+        fetch('/api/add_comment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                idea_id: '{{ idea.id }}',
+                author: authorName,
+                comment: commentText
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Add comment to list
+                const newComment = document.createElement('div');
+                newComment.className = 'border-bottom pb-3 mb-3';
+                newComment.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <strong class="small">${authorName}</strong>
+                        <small class="text-muted">Just now</small>
+                    </div>
+                    <p class="mb-0 small">${commentText}</p>
+                `;
+                
+                // If no comments existed, replace the empty message
+                const emptyMessage = commentsList.querySelector('.text-center.text-muted');
+                if (emptyMessage) {
+                    commentsList.removeChild(emptyMessage);
+                }
+                
+                commentsList.appendChild(newComment);
+                
+                // Clear form
+                document.getElementById('authorName').value = '';
+                document.getElementById('commentText').value = '';
+                
+                // Show success message
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-success alert-dismissible fade show';
+                alert.innerHTML = `
+                    Comment added successfully!
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                commentForm.insertBefore(alert, commentForm.firstChild);
+                
+                // Auto-dismiss after 3 seconds
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.remove();
+                    }
+                }, 3000);
+                
+            } else {
+                alert('Error adding comment: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error adding comment. Please try again.');
+        });
+    });
+});
+</script>
+{% endblock %}
