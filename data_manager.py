@@ -322,6 +322,64 @@ class DataManager:
             return idea_data.get("comments", [])
         return []
     
+    def save_session_for_marketplace(self, session_id, session_data):
+        """Save session data for potential marketplace integration"""
+        try:
+            # Create marketplace storage directory if it doesn't exist
+            marketplace_dir = os.path.join(self.data_dir, 'marketplace_sessions')
+            os.makedirs(marketplace_dir, exist_ok=True)
+            
+            # Save with timestamp for organization
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"session_{session_id}_{timestamp}.json"
+            filepath = os.path.join(marketplace_dir, filename)
+            
+            # Add metadata for future marketplace integration
+            marketplace_data = {
+                'session_id': session_id,
+                'saved_at': timestamp,
+                'considerations': session_data.get('considerations', {}),
+                'chat_history': session_data.get('chat_history', []),
+                'created_at': session_data.get('created_at', ''),
+                'last_updated': datetime.now().isoformat()
+            }
+            
+            with open(filepath, 'w', encoding='utf-8') as f:
+                json.dump(marketplace_data, f, indent=2, ensure_ascii=False)
+            
+            logger.info(f"Session saved for marketplace: {filepath}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error saving session for marketplace: {str(e)}")
+            return False
+    
+    def get_marketplace_sessions(self):
+        """Get all saved sessions for marketplace review"""
+        try:
+            marketplace_dir = os.path.join(self.data_dir, 'marketplace_sessions')
+            if not os.path.exists(marketplace_dir):
+                return []
+            
+            sessions = []
+            for filename in os.listdir(marketplace_dir):
+                if filename.endswith('.json'):
+                    filepath = os.path.join(marketplace_dir, filename)
+                    try:
+                        with open(filepath, 'r', encoding='utf-8') as f:
+                            session_data = json.load(f)
+                            sessions.append(session_data)
+                    except Exception as e:
+                        logger.error(f"Error loading marketplace session {filename}: {str(e)}")
+            
+            # Sort by saved_at timestamp (newest first)
+            sessions.sort(key=lambda x: x.get('saved_at', ''), reverse=True)
+            return sessions
+            
+        except Exception as e:
+            logger.error(f"Error getting marketplace sessions: {str(e)}")
+            return []
+    
     def _extract_title(self, session_data):
         """Extract title from session data"""
         considerations = session_data.get("considerations", {})

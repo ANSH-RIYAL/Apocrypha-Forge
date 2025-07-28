@@ -36,10 +36,19 @@ def index():
 @app.route('/forge')
 def forge():
     """Main ASF interface for ideation and chat"""
-    if 'session_id' not in session:
-        session['session_id'] = str(uuid.uuid4())
+    # Clear any existing session and start fresh for demo purposes
+    if 'session_id' in session:
+        # Optionally save the old session data before clearing (for future marketplace integration)
+        old_session_id = session['session_id']
+        old_session_data = data_manager.load_session(old_session_id)
+        if old_session_data and old_session_data.get('considerations'):
+            # Save to a separate storage for potential marketplace integration
+            data_manager.save_session_for_marketplace(old_session_id, old_session_data)
     
-    # Load existing session data
+    # Create new session
+    session['session_id'] = str(uuid.uuid4())
+    
+    # Load fresh session data (will be empty)
     session_data = data_manager.load_session(session['session_id'])
     
     return render_template('forge.html', 
