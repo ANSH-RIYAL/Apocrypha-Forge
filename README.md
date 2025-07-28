@@ -119,9 +119,18 @@ The application uses a JSON-based configuration system located in `data/config.j
 
 The Forge uses OpenAI's GPT-4o model to:
 - Generate responses during ideation sessions
-- Auto-fill consideration panels based on conversations
+- **Auto-fill consideration panels** based on conversations with structured data extraction
 - Provide equity distribution suggestions
 - Offer business guidance and feedback
+- **Track completion status** using boolean flags for each consideration
+- **Maintain conversation context** with sliding window memory management
+
+### Enhanced Auto-Filling System
+- **Structured Data Format**: Considerations now use a hierarchical structure with `content`, `previous_value`, `metadata`, and `is_complete` fields
+- **Smart Extraction**: AI responses are parsed to extract consideration updates in a structured format
+- **Response Cleaning**: Consideration update sections are automatically removed from user-facing responses
+- **Backward Compatibility**: Supports both new structured format and legacy string-based considerations
+- **Completion Tracking**: Boolean completion status determined at update time based on content quality
 
 ### API Requirements
 - OpenAI API key with GPT-4o access
@@ -136,6 +145,12 @@ The application uses a local JSON-based database system:
 - **Comments**: Community feedback on submitted ideas
 
 All data is stored locally in the `data/` directory and automatically backed up.
+
+### Enhanced Session Management
+- **Comprehensive Logging**: Detailed logging throughout the application for debugging
+- **Error Handling**: Robust error handling with detailed tracebacks
+- **Session Persistence**: Automatic session creation and management
+- **Consideration Tracking**: Real-time updates to consideration completion status
 
 ## 🌐 API Endpoints
 
@@ -211,6 +226,15 @@ The Forge was transformed from the original "Agentic Startup Factory" with:
 - Enhanced collaboration features
 - Improved UI/UX design
 - Comprehensive business consideration framework
+
+### Latest Enhancements
+- **Consideration Auto-Filling System**: AI automatically extracts and updates consideration content from conversations
+- **Structured Data Management**: New hierarchical consideration format with metadata support
+- **Boolean Completion Tracking**: Improved completion status tracking with boolean flags
+- **Enhanced Debugging**: Comprehensive logging infrastructure throughout the application
+- **Format Enforcement**: AI responses use plain text without formatting for better readability
+- **HPC Cluster Support**: Standalone script for high-performance computing experiments
+- **Local Development Setup**: Environment variable configuration for local development
 
 ---
 
