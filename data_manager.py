@@ -4,6 +4,10 @@ import logging
 from datetime import datetime, timedelta
 import uuid
 
+# Configure detailed logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 class DataManager:
     def __init__(self):
         self.sessions_dir = "data/sessions"
@@ -50,23 +54,35 @@ class DataManager:
     
     def load_session(self, session_id):
         """Load session data from file"""
+        logger.info(f"=== LOADING SESSION {session_id} ===")
         session_file = os.path.join(self.sessions_dir, f"{session_id}.json")
+        logger.info(f"Session file path: {session_file}")
         
         if os.path.exists(session_file):
+            logger.info("Session file exists, loading...")
             try:
                 with open(session_file, 'r') as f:
-                    return json.load(f)
+                    session_data = json.load(f)
+                logger.info(f"Session loaded successfully: {list(session_data.keys())}")
+                logger.info(f"Considerations: {list(session_data.get('considerations', {}).keys())}")
+                logger.info(f"Chat history length: {len(session_data.get('chat_history', []))}")
+                return session_data
             except Exception as e:
-                logging.error(f"Error loading session {session_id}: {str(e)}")
+                logger.error(f"Error loading session {session_id}: {str(e)}")
+        else:
+            logger.info("Session file does not exist, creating new session")
         
         # Return new session structure
-        return {
+        new_session = {
             "session_id": session_id,
             "created_at": datetime.now().isoformat(),
             "considerations": {},
             "chat_history": [],
             "last_updated": datetime.now().isoformat()
         }
+        logger.info(f"Created new session structure: {list(new_session.keys())}")
+        logger.info("=== SESSION LOADING END ===")
+        return new_session
     
     def save_session(self, session_id, session_data):
         """Save session data to file"""

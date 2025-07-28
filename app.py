@@ -6,8 +6,9 @@ import uuid
 from openai_service import OpenAIService
 from data_manager import DataManager
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
+# Configure detailed logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "apocrypha_forge_secret_key")
@@ -64,30 +65,57 @@ def idea_detail(idea_id):
 @app.route('/api/chat', methods=['POST'])
 def chat():
     """Handle chat interactions with OpenAI"""
+    logger.info("=== CHAT API CALL START ===")
     try:
         data = request.get_json()
         message = data.get('message', '')
         session_id = session.get('session_id')
         
+        logger.info(f"Received message: {message[:100]}...")
+        logger.info(f"Session ID: {session_id}")
+        logger.info(f"Request data keys: {list(data.keys()) if data else 'None'}")
+        
         if not session_id:
+            logger.error("No session ID found in session")
             return jsonify({'error': 'No session found'}), 400
         
         # Load session context
+        logger.info("Loading session data...")
         session_data = data_manager.load_session(session_id)
+        logger.info(f"Session data loaded: {list(session_data.keys()) if session_data else 'None'}")
         
         # Get AI response
-        response = openai_service.get_asf_response(message, session_data, CONSIDERATION_CATEGORIES)
+        logger.info("Calling OpenAI service...")
+        ai_result = openai_service.get_asf_response(message, session_data, CONSIDERATION_CATEGORIES)
+        logger.info(f"OpenAI response received, length: {len(ai_result.get('response', ''))}")
+        
+        # Extract response and consideration updates
+        response = ai_result.get('response', '')
+        consideration_updates = ai_result.get('consideration_updates', {})
+        
+        # Apply consideration updates to session
+        if consideration_updates:
+            logger.info(f"Applying {len(consideration_updates)} consideration updates...")
+            for consideration_id, content in consideration_updates.items():
+                logger.info(f"Updating consideration {consideration_id}: {content[:50]}...")
+                data_manager.update_consideration(session_id, consideration_id, content)
         
         # Update session with new message
+        logger.info("Adding message to session...")
         data_manager.add_message(session_id, message, response)
+        logger.info("Message added to session successfully")
         
+        logger.info("=== CHAT API CALL END ===")
         return jsonify({
             'response': response,
-            'session_id': session_id
+            'session_id': session_id,
+            'consideration_updates': consideration_updates
         })
         
     except Exception as e:
-        logging.error(f"Chat error: {str(e)}")
+        logger.error(f"Chat error: {str(e)}")
+        logger.error(f"Error type: {type(e).__name__}")
+        logger.error(f"Error traceback: ", exc_info=True)
         return jsonify({'error': 'Failed to process message'}), 500
 
 @app.route('/api/update_consideration', methods=['POST'])
