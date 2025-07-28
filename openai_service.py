@@ -35,7 +35,9 @@ class OpenAIService:
             logger.info(f"Built context: {context[:200]}...")
             
             # Create system prompt for ASF with consideration auto-filling instructions
-            system_prompt = f"""You are the Agentic Startup Factory (ASF), an AI assistant that helps ideators refine startup ideas through structured considerations. You guide users through 8 core consideration categories to develop comprehensive startup concepts.
+            system_prompt = f"""FORMATTING RULE: Use ONLY plain text. NO bold, NO asterisks, NO markdown, NO special formatting. Just regular text.
+
+You are the Agentic Startup Factory (ASF), an AI assistant that helps ideators refine startup ideas through structured considerations. You guide users through 8 core consideration categories to develop comprehensive startup concepts.
 
 Your role is to:
 1. Ask insightful questions to help develop ideas
@@ -45,8 +47,11 @@ Your role is to:
 5. Encourage ethical business practices and community collaboration
 6. Suggest when considerations need more detail (minimum 100 words each)
 7. AUTO-FILL consideration content based on the conversation
+8. Ask about remaining incomplete considerations
 
-IMPORTANT: After your conversational response, you MUST include consideration updates in this exact format:
+CRITICAL: Use plain text only. No bold formatting, no asterisks, no markdown, no special characters. Just regular text.
+
+MANDATORY: After your conversational response, you MUST include consideration updates in this exact format:
 
 === CONSIDERATION UPDATES ===
 [consideration_id]: [content]
@@ -61,7 +66,7 @@ target_market: Primary target includes rural healthcare clinics, community healt
 Current session context:
 {context}
 
-Be conversational, supportive, and focus on helping the user develop a strong startup concept. If they ask about a specific consideration, provide targeted guidance for that area.
+Be conversational, supportive, and focus on helping the user develop a strong startup concept. Use plain text without any formatting. Always ask about remaining incomplete considerations to guide the user toward completing all 8 areas. ALWAYS include consideration updates section at the end of your response.
 """
             logger.info(f"System prompt length: {len(system_prompt)} characters")
             
@@ -101,6 +106,12 @@ Be conversational, supportive, and focus on helping the user develop a strong st
             consideration_updates = self._extract_consideration_updates(ai_response)
             logger.info(f"Extracted consideration updates: {consideration_updates}")
             
+            # If no consideration updates found, generate them based on context
+            if not consideration_updates:
+                logger.info("No consideration updates found, generating fallback updates")
+                consideration_updates = self._generate_fallback_updates(user_message, session_data, consideration_categories)
+                logger.info(f"Generated fallback updates: {consideration_updates}")
+            
             # Clean response by removing consideration update section
             clean_response = self._clean_response(ai_response)
             logger.info(f"Clean response length: {len(clean_response)} characters")
@@ -135,22 +146,40 @@ Be conversational, supportive, and focus on helping the user develop a strong st
         considerations = session_data.get('considerations', {})
         logger.info(f"Considerations in session: {list(considerations.keys())}")
         
-        completed_count = sum(1 for content in considerations.values() if len(content.strip()) >= 100)
+        # Handle both old string format and new dict format for completion count
+        completed_count = 0
+        for content in considerations.values():
+            if isinstance(content, dict):
+                content_text = content.get('content', '').strip()
+            else:
+                content_text = content.strip()
+            if len(content_text.split()) >= 100:
+                completed_count += 1
         logger.info(f"Completed considerations: {completed_count}/8")
         context_parts.append(f"Completed considerations: {completed_count}/8")
         
         # Add brief summary of each completed consideration
         for cat in consideration_categories:
             cat_id = cat['id']
-            content = considerations.get(cat_id, '').strip()
-            logger.info(f"Consideration '{cat['title']}': {len(content)} characters")
+            consideration_data = considerations.get(cat_id, '')
+            
+            # Handle both old string format and new dict format
+            if isinstance(consideration_data, dict):
+                content = consideration_data.get('content', '').strip()
+                is_complete = consideration_data.get('is_complete', False)
+            else:
+                content = consideration_data.strip()
+                is_complete = len(content.split()) >= 100
+            
+            logger.info(f"Consideration '{cat['title']}': {len(content)} characters, complete: {is_complete}")
             
             if content:
                 summary = content[:150] + "..." if len(content) > 150 else content
-                context_parts.append(f"{cat['title']}: {summary}")
+                status = "COMPLETE" if is_complete else "INCOMPLETE"
+                context_parts.append(f"{cat['title']}: {status} - {summary}")
                 logger.info(f"  - Has content: {summary[:50]}...")
             else:
-                context_parts.append(f"{cat['title']}: Not started")
+                context_parts.append(f"{cat['title']}: NOT STARTED")
                 logger.info(f"  - No content yet")
         
         final_context = "\n".join(context_parts)
@@ -203,28 +232,80 @@ Be conversational, supportive, and focus on helping the user develop a strong st
         """Remove consideration updates section from response"""
         logger.info("=== CLEANING RESPONSE ===")
         
-        try:
-            # Remove consideration updates section
-            start_marker = "=== CONSIDERATION UPDATES ==="
-            end_marker = "=== END CONSIDERATION UPDATES ==="
-            
-            start_idx = ai_response.find(start_marker)
-            end_idx = ai_response.find(end_marker)
-            
-            if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
-                # Remove the entire section
-                clean_response = ai_response[:start_idx].strip()
-                logger.info(f"Removed consideration updates section, cleaned length: {len(clean_response)}")
-            else:
-                clean_response = ai_response
-                logger.info("No consideration updates section found, keeping original response")
-                
-        except Exception as e:
-            logger.error(f"Error cleaning response: {str(e)}")
-            clean_response = ai_response
+        # Look for consideration updates section and remove it
+        start_marker = "=== CONSIDERATION UPDATES ==="
+        end_marker = "=== END CONSIDERATION UPDATES ==="
         
+        start_idx = ai_response.find(start_marker)
+        if start_idx != -1:
+            end_idx = ai_response.find(end_marker, start_idx)
+            if end_idx != -1:
+                # Remove the entire section including markers
+                cleaned_response = ai_response[:start_idx].strip() + ai_response[end_idx + len(end_marker):].strip()
+                logger.info(f"Removed consideration updates section, cleaned length: {len(cleaned_response)}")
+                logger.info("=== RESPONSE CLEANING END ===")
+                return cleaned_response
+        
+        logger.info("No consideration updates section found, keeping original response")
         logger.info("=== RESPONSE CLEANING END ===")
-        return clean_response
+        return ai_response
+    
+    def _generate_fallback_updates(self, user_message, session_data, consideration_categories):
+        """Generate fallback consideration updates when AI doesn't provide them"""
+        logger.info("=== GENERATING FALLBACK UPDATES ===")
+        
+        # Get current considerations
+        current_considerations = session_data.get('considerations', {}) if session_data else {}
+        
+        # Determine which considerations might need updates based on user message
+        potential_updates = {}
+        
+        # Simple keyword-based mapping
+        message_lower = user_message.lower()
+        
+        if any(word in message_lower for word in ['problem', 'issue', 'challenge']):
+            if 'problem_definition' not in current_considerations or not self._has_content(current_considerations.get('problem_definition')):
+                potential_updates['problem_definition'] = f"Based on the conversation, the problem involves {user_message[:100]}..."
+        
+        if any(word in message_lower for word in ['market', 'customer', 'user', 'target']):
+            if 'target_market' not in current_considerations or not self._has_content(current_considerations.get('target_market')):
+                potential_updates['target_market'] = f"Target market analysis based on: {user_message[:100]}..."
+        
+        if any(word in message_lower for word in ['solution', 'approach', 'how', 'method']):
+            if 'solution_approach' not in current_considerations or not self._has_content(current_considerations.get('solution_approach')):
+                potential_updates['solution_approach'] = f"Solution approach considering: {user_message[:100]}..."
+        
+        if any(word in message_lower for word in ['competitor', 'competition', 'competitive']):
+            if 'competitive_analysis' not in current_considerations or not self._has_content(current_considerations.get('competitive_analysis')):
+                potential_updates['competitive_analysis'] = f"Competitive analysis based on: {user_message[:100]}..."
+        
+        if any(word in message_lower for word in ['business', 'revenue', 'money', 'model']):
+            if 'business_model' not in current_considerations or not self._has_content(current_considerations.get('business_model')):
+                potential_updates['business_model'] = f"Business model considerations: {user_message[:100]}..."
+        
+        if any(word in message_lower for word in ['technical', 'technology', 'feasibility', 'tech']):
+            if 'technical_feasibility' not in current_considerations or not self._has_content(current_considerations.get('technical_feasibility')):
+                potential_updates['technical_feasibility'] = f"Technical feasibility analysis: {user_message[:100]}..."
+        
+        if any(word in message_lower for word in ['team', 'people', 'hire', 'role']):
+            if 'team_structure' not in current_considerations or not self._has_content(current_considerations.get('team_structure')):
+                potential_updates['team_structure'] = f"Team structure considerations: {user_message[:100]}..."
+        
+        if any(word in message_lower for word in ['growth', 'scale', 'expand', 'strategy']):
+            if 'growth_strategy' not in current_considerations or not self._has_content(current_considerations.get('growth_strategy')):
+                potential_updates['growth_strategy'] = f"Growth strategy based on: {user_message[:100]}..."
+        
+        logger.info(f"Generated {len(potential_updates)} fallback updates")
+        logger.info("=== FALLBACK UPDATES END ===")
+        return potential_updates
+    
+    def _has_content(self, consideration_data):
+        """Check if consideration has meaningful content"""
+        if isinstance(consideration_data, dict):
+            content = consideration_data.get('content', '')
+        else:
+            content = consideration_data or ''
+        return len(content.strip()) > 50  # At least 50 characters
     
     def generate_equity_suggestion(self, team_structure, contribution_data):
         """Generate equity split suggestions based on team structure and contributions"""

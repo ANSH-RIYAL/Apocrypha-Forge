@@ -10,7 +10,6 @@ class ForgeInterface {
         this.initializeElements();
         this.bindEvents();
         this.loadSessionStatus();
-        this.initializeConsiderations();
     }
     
     initializeElements() {
@@ -71,23 +70,6 @@ class ForgeInterface {
         this.confirmSubmit.addEventListener('click', () => this.submitIdea());
     }
     
-    initializeConsiderations() {
-        // Initialize all consideration boxes
-        document.querySelectorAll('.consideration-box').forEach(box => {
-            const considerationId = box.dataset.considerationId;
-            const textElement = box.querySelector('.consideration-text');
-            const content = textElement.textContent.trim();
-            
-            // Check if it's placeholder text
-            if (content === 'Will be filled by AI...') {
-                textElement.classList.add('placeholder');
-            } else if (content) {
-                this.updateConsiderationStatus(considerationId, content);
-            }
-        });
-        this.updateProgress();
-    }
-    
     async loadSessionStatus() {
         try {
             const response = await fetch('/api/session_status');
@@ -97,9 +79,62 @@ class ForgeInterface {
                 this.sessionId = data.session_id;
                 this.updateProgress(data.completion_status);
                 this.submitBtn.disabled = !data.can_submit;
+                
+                // Update consideration panels with actual content
+                if (data.considerations) {
+                    this.updateConsiderationPanels(data.considerations);
+                }
             }
         } catch (error) {
             console.error('Error loading session status:', error);
+        }
+    }
+    
+    updateConsiderationPanels(considerations) {
+        // Update each consideration panel with actual content
+        for (const [considerationId, considerationData] of Object.entries(considerations)) {
+            const box = document.querySelector(`[data-consideration-id="${considerationId}"]`);
+            if (box) {
+                const textElement = box.querySelector('.consideration-text');
+                const content = considerationData.content || '';
+                
+                if (content && content.trim() !== '') {
+                    textElement.textContent = content;
+                    textElement.classList.remove('placeholder');
+                    
+                    // Update completion status based on is_complete flag
+                    if (considerationData.is_complete) {
+                        box.classList.add('completed');
+                        box.classList.remove('in-progress', 'updating');
+                        const statusIcon = box.querySelector('.consideration-status i');
+                        if (statusIcon) {
+                            statusIcon.className = 'bi bi-check-circle text-success';
+                        }
+                    } else if (content.trim() !== '') {
+                        box.classList.add('in-progress');
+                        box.classList.remove('completed', 'updating');
+                        const statusIcon = box.querySelector('.consideration-status i');
+                        if (statusIcon) {
+                            statusIcon.className = 'bi bi-clock text-warning';
+                        }
+                    } else {
+                        box.classList.remove('completed', 'in-progress', 'updating');
+                        const statusIcon = box.querySelector('.consideration-status i');
+                        if (statusIcon) {
+                            statusIcon.className = 'bi bi-circle text-muted';
+                        }
+                    }
+                } else {
+                    // No content - show placeholder
+                    textElement.textContent = 'Will be filled by AI...';
+                    textElement.classList.add('placeholder');
+                    box.classList.remove('completed', 'in-progress', 'updating');
+                    const statusIcon = box.querySelector('.consideration-status i');
+                    if (statusIcon) {
+                        statusIcon.className = 'bi bi-circle text-muted';
+                    }
+                }
+            }
         }
     }
     
@@ -114,11 +149,6 @@ class ForgeInterface {
         
         // Add user message to chat
         this.addMessageToChat(message, 'user');
-        
-        // Mark some considerations as updating if this seems like substantial input
-        if (message.length > 50) {
-            this.simulateAIConsiderationUpdates();
-        }
         
         try {
             const response = await fetch('/api/chat', {
@@ -135,8 +165,13 @@ class ForgeInterface {
                 this.addMessageToChat(data.response, 'assistant');
                 this.sessionId = data.session_id;
                 
-                // Simulate AI updating considerations
-                await this.processAIConsiderationUpdates(data.response);
+                // Process real consideration updates from AI response
+                if (data.consideration_updates && Object.keys(data.consideration_updates).length > 0) {
+                    await this.processAIConsiderationUpdates(data.consideration_updates);
+                }
+                
+                // Reload session status to get updated completion counts
+                await this.loadSessionStatus();
             } else {
                 throw new Error(data.error || 'Failed to get response');
             }
@@ -186,37 +221,30 @@ class ForgeInterface {
         }
     }
     
-    simulateAIConsiderationUpdates() {
-        // Mark 2-3 random considerations as updating
-        const considerations = Array.from(document.querySelectorAll('.consideration-box'));
-        const toUpdate = considerations
-            .filter(box => !box.classList.contains('completed'))
-            .slice(0, Math.floor(Math.random() * 3) + 1);
-            
-        toUpdate.forEach(box => {
-            box.classList.add('updating');
-            this.pendingUpdates.add(box.dataset.considerationId);
-        });
-    }
-    
-    async processAIConsiderationUpdates(aiResponse) {
-        // Simulate AI extracting information to fill considerations
-        // In a real implementation, the AI would return structured data
+    async processAIConsiderationUpdates(considerationUpdates) {
+        // Process real consideration updates from AI response
+        console.log('Processing consideration updates:', considerationUpdates);
         
-        // For now, simulate by updating random pending considerations
-        const pendingArray = Array.from(this.pendingUpdates);
-        
-        for (const considerationId of pendingArray) {
-            // Simulate delay
-            await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
-            
-            // Generate relevant content based on consideration type
-            const content = this.generateSampleContent(considerationId, aiResponse);
-            
-            if (content) {
-                await this.updateConsiderationContent(considerationId, content);
+        for (const [considerationId, content] of Object.entries(considerationUpdates)) {
+            // Skip if content is "NOT STARTED" or empty
+            if (!content || content === 'NOT STARTED' || content.trim() === '') {
+                continue;
             }
             
+            // Mark consideration as updating
+            const box = document.querySelector(`[data-consideration-id="${considerationId}"]`);
+            if (box) {
+                box.classList.add('updating');
+                this.pendingUpdates.add(considerationId);
+            }
+            
+            // Simulate small delay for visual feedback
+            await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 500));
+            
+            // Update the consideration content
+            await this.updateConsiderationContent(considerationId, content);
+            
+            // Remove from pending updates
             this.pendingUpdates.delete(considerationId);
         }
     }

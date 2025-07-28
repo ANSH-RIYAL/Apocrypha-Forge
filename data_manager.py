@@ -114,10 +114,60 @@ class DataManager:
         self.save_session(session_id, session_data)
     
     def update_consideration(self, session_id, consideration_id, content):
-        """Update consideration content"""
+        """Update consideration content with previous value storage and metadata placeholder"""
         session_data = self.load_session(session_id)
-        session_data["considerations"][consideration_id] = content
+        
+        # Get current content (handle both old string format and new dict format)
+        current_content = session_data["considerations"].get(consideration_id, '')
+        if isinstance(current_content, dict):
+            current_content = current_content.get('content', '')
+        
+        # Check if this update makes the consideration complete (100+ words)
+        word_count = len(content.split())
+        is_complete = word_count >= self.config['submission_requirements']['min_words_per_consideration']
+        
+        # Initialize or update the consideration structure
+        if consideration_id not in session_data["considerations"]:
+            # New consideration - initialize with new structure
+            session_data["considerations"][consideration_id] = {
+                'content': content,
+                'previous_value': '',
+                'metadata': {},
+                'is_complete': is_complete
+            }
+        elif isinstance(session_data["considerations"][consideration_id], str):
+            # Convert from old string format to new dict format
+            session_data["considerations"][consideration_id] = {
+                'content': current_content,
+                'previous_value': '',
+                'metadata': {},
+                'is_complete': len(current_content.split()) >= self.config['submission_requirements']['min_words_per_consideration']
+            }
+            # Update with new content
+            session_data["considerations"][consideration_id]['previous_value'] = current_content
+            session_data["considerations"][consideration_id]['content'] = content
+            session_data["considerations"][consideration_id]['is_complete'] = is_complete
+        else:
+            # Already in new dict format - update with new content, preserving previous value
+            session_data["considerations"][consideration_id]['previous_value'] = current_content
+            session_data["considerations"][consideration_id]['content'] = content
+            session_data["considerations"][consideration_id]['is_complete'] = is_complete
+        
         self.save_session(session_id, session_data)
+    
+    def get_consideration_content(self, consideration_data):
+        """Get content from consideration data, handling both old and new formats"""
+        if isinstance(consideration_data, dict):
+            return consideration_data.get('content', '')
+        else:
+            return consideration_data
+    
+    def get_consideration_previous_value(self, consideration_data):
+        """Get previous value from consideration data, handling both old and new formats"""
+        if isinstance(consideration_data, dict):
+            return consideration_data.get('previous_value', '')
+        else:
+            return ''
     
     def get_completion_status(self, session_data):
         """Get completion status for considerations"""
@@ -129,8 +179,20 @@ class DataManager:
             }
         
         considerations = session_data.get("considerations", {})
-        min_words = self.config['submission_requirements']['min_words_per_consideration']
-        completed_count = sum(1 for content in considerations.values() if len(content.strip().split()) >= min_words)
+        
+        # Count completed considerations using boolean is_complete values
+        completed_count = 0
+        for consideration_id, content in considerations.items():
+            if isinstance(content, dict):
+                # New format: check is_complete field
+                if content.get('is_complete', False):
+                    completed_count += 1
+            else:
+                # Old format: calculate word count on demand
+                content_text = content.strip()
+                if len(content_text.split()) >= self.config['submission_requirements']['min_words_per_consideration']:
+                    completed_count += 1
+        
         min_completed = self.config['submission_requirements']['min_completed_considerations']
         
         return {

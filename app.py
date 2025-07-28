@@ -209,9 +209,30 @@ def session_status():
         session_data = data_manager.load_session(session_id)
         completion_status = data_manager.get_completion_status(session_data)
         
+        # Extract consideration content for frontend display
+        considerations = {}
+        if session_data and 'considerations' in session_data:
+            for consideration_id, consideration_data in session_data['considerations'].items():
+                if isinstance(consideration_data, dict):
+                    # New format: extract content and completion status
+                    considerations[consideration_id] = {
+                        'content': consideration_data.get('content', ''),
+                        'is_complete': consideration_data.get('is_complete', False)
+                    }
+                else:
+                    # Old format: convert to new format
+                    content = consideration_data if consideration_data else ''
+                    word_count = len(content.split()) if content else 0
+                    is_complete = word_count >= 100
+                    considerations[consideration_id] = {
+                        'content': content,
+                        'is_complete': is_complete
+                    }
+        
         return jsonify({
             'session_id': session_id,
             'completion_status': completion_status,
+            'considerations': considerations,
             'can_submit': completion_status['completed_count'] >= 6
         })
         
