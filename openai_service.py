@@ -51,6 +51,8 @@ Your role is to:
 
 CRITICAL: Use plain text only. No bold formatting, no asterisks, no markdown, no special characters. Just regular text.
 
+RESPONSE LENGTH: Keep responses concise and focused. Aim for 2-3 sentences per point. Avoid lengthy explanations unless specifically requested.
+
 MANDATORY: After your conversational response, you MUST include consideration updates in this exact format:
 
 === CONSIDERATION UPDATES ===
@@ -66,7 +68,7 @@ target_market: Primary target includes rural healthcare clinics, community healt
 Current session context:
 {context}
 
-Be conversational, supportive, and focus on helping the user develop a strong startup concept. Use plain text without any formatting. Always ask about remaining incomplete considerations to guide the user toward completing all 8 areas. ALWAYS include consideration updates section at the end of your response.
+Be conversational, supportive, and focus on helping the user develop a strong startup concept. Use plain text without any formatting. Keep responses concise and easy to read. Always ask about remaining incomplete considerations to guide the user toward completing all 8 areas. ALWAYS include consideration updates section at the end of your response.
 """
             logger.info(f"System prompt length: {len(system_prompt)} characters")
             
@@ -263,37 +265,68 @@ Be conversational, supportive, and focus on helping the user develop a strong st
         # Simple keyword-based mapping
         message_lower = user_message.lower()
         
+        # Track how many updates we've generated
+        updates_generated = 0
+        max_updates = 3  # Try to fill 2-3 considerations
+        
         if any(word in message_lower for word in ['problem', 'issue', 'challenge']):
             if 'problem_definition' not in current_considerations or not self._has_content(current_considerations.get('problem_definition')):
                 potential_updates['problem_definition'] = f"Based on the conversation, the problem involves {user_message[:100]}..."
+                updates_generated += 1
         
         if any(word in message_lower for word in ['market', 'customer', 'user', 'target']):
             if 'target_market' not in current_considerations or not self._has_content(current_considerations.get('target_market')):
                 potential_updates['target_market'] = f"Target market analysis based on: {user_message[:100]}..."
+                updates_generated += 1
         
         if any(word in message_lower for word in ['solution', 'approach', 'how', 'method']):
             if 'solution_approach' not in current_considerations or not self._has_content(current_considerations.get('solution_approach')):
                 potential_updates['solution_approach'] = f"Solution approach considering: {user_message[:100]}..."
+                updates_generated += 1
         
         if any(word in message_lower for word in ['competitor', 'competition', 'competitive']):
             if 'competitive_analysis' not in current_considerations or not self._has_content(current_considerations.get('competitive_analysis')):
                 potential_updates['competitive_analysis'] = f"Competitive analysis based on: {user_message[:100]}..."
+                updates_generated += 1
         
         if any(word in message_lower for word in ['business', 'revenue', 'money', 'model']):
             if 'business_model' not in current_considerations or not self._has_content(current_considerations.get('business_model')):
                 potential_updates['business_model'] = f"Business model considerations: {user_message[:100]}..."
+                updates_generated += 1
         
         if any(word in message_lower for word in ['technical', 'technology', 'feasibility', 'tech']):
             if 'technical_feasibility' not in current_considerations or not self._has_content(current_considerations.get('technical_feasibility')):
                 potential_updates['technical_feasibility'] = f"Technical feasibility analysis: {user_message[:100]}..."
+                updates_generated += 1
         
         if any(word in message_lower for word in ['team', 'people', 'hire', 'role']):
             if 'team_structure' not in current_considerations or not self._has_content(current_considerations.get('team_structure')):
                 potential_updates['team_structure'] = f"Team structure considerations: {user_message[:100]}..."
+                updates_generated += 1
         
         if any(word in message_lower for word in ['growth', 'scale', 'expand', 'strategy']):
             if 'growth_strategy' not in current_considerations or not self._has_content(current_considerations.get('growth_strategy')):
                 potential_updates['growth_strategy'] = f"Growth strategy based on: {user_message[:100]}..."
+                updates_generated += 1
+        
+        # If we haven't generated enough updates, fill some empty considerations
+        if updates_generated < max_updates:
+            # Get all consideration categories
+            all_considerations = [cat['id'] for cat in consideration_categories]
+            
+            # Find empty considerations
+            empty_considerations = []
+            for consideration_id in all_considerations:
+                if consideration_id not in current_considerations or not self._has_content(current_considerations.get(consideration_id)):
+                    empty_considerations.append(consideration_id)
+            
+            # Fill up to max_updates total
+            for consideration_id in empty_considerations:
+                if updates_generated >= max_updates:
+                    break
+                if consideration_id not in potential_updates:
+                    potential_updates[consideration_id] = f"Basic {consideration_id.replace('_', ' ')} considerations based on the startup idea..."
+                    updates_generated += 1
         
         logger.info(f"Generated {len(potential_updates)} fallback updates")
         logger.info("=== FALLBACK UPDATES END ===")
